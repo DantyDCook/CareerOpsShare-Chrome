@@ -1,0 +1,12 @@
+{
+  "name": "careerops-share-chrome",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Manifest V3 CareerOps job posting share extension",
+  "scripts": {
+    "test": "node --test",
+    "check": "node --check core.js && node --check background.js && node --check capture.js && node --check ui.js && node --test"
+  },
+  "engines": {"node": ">=20"}
+}
