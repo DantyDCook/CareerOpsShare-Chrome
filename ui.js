@@ -1,4 +1,4 @@
-import { ACTIONS, captureToDraft, createRequest, renderRequest, MAX_CONTENT_CHARS } from './core.js';
+import { ACTIONS, captureToDraft, createRequest, renderRequest, inferJobMetadata, MAX_CONTENT_CHARS } from './core.js';
 
 const byId = (id) => document.getElementById(id);
 const form = byId('shareForm');
@@ -22,6 +22,9 @@ function readForm() {
     canonicalUrl: String(data.get('canonicalUrl') || ''),
     sourceId: draft.sourceId,
     originalUrl: draft.originalUrl,
+    identityUrl: draft.identityUrl,
+    sourceOverride: draft.sourceOverride,
+    jobIdOverride: draft.jobIdOverride,
     wasTruncated: draft.wasTruncated,
   };
 }
@@ -133,7 +136,22 @@ async function initialize() {
   if (!(await loadStaged())) await captureActivePage();
 }
 
-form.addEventListener('input', updatePreview);
+form.addEventListener('input', (event) => {
+  if (event.target.id === 'canonicalUrl') {
+    // Reset previously inferred values (and stale manual overrides) on URL edits.
+    const metadata = inferJobMetadata(event.target.value);
+    byId('source').value = metadata.source;
+    byId('jobId').value = metadata.jobId;
+    draft.sourceId = metadata.sourceId;
+    draft.sourceOverride = false;
+    draft.jobIdOverride = false;
+  } else if (event.target.id === 'source') {
+    draft.sourceOverride = true;
+  } else if (event.target.id === 'jobId') {
+    draft.jobIdOverride = true;
+  }
+  updatePreview();
+});
 form.addEventListener('change', updatePreview);
 form.addEventListener('submit', (event) => event.preventDefault());
 byId('recapture').addEventListener('click', captureActivePage);
