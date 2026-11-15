@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CareerOps Share</title>
+  <link rel="stylesheet" href="ui.css">
+</head>
+<body class="review">
+  <main class="app">
+    <header class="header">
+      <div class="brand-mark" aria-hidden="true">C<span>↗</span></div>
+      <div><h1>CareerOps Share</h1><p>Capture • Review • Handoff</p></div>
+      <span class="version">v0.1.0</span>
+    </header>
+    <div id="notice" class="notice" role="status" aria-live="polite">Loading selected job…</div>
+    <form id="shareForm" novalidate>
+      <fieldset class="preset-fieldset"><legend>CareerOps action</legend>
+        <div class="preset-row">
+          <label class="preset"><input type="radio" name="action" value="ANALYZE" checked><span>Quick Analyze</span></label>
+          <label class="preset"><input type="radio" name="action" value="ANALYZE_BUILD_STORE"><span>Build & Store</span></label>
+          <label class="preset"><input type="radio" name="action" value="ANALYZE_BUILD_STORE_COVER_LETTER"><span>Full Application</span></label>
+        </div>
+      </fieldset>
+      <div class="two-col">
+        <label>Job title<input id="subject" name="subject" placeholder="Job title"></label>
+        <label>Company<input id="company" name="company" placeholder="Company (optional)"></label>
+      </div>
+      <div class="two-col">
+        <label>Source<input id="source" name="source" placeholder="LinkedIn"></label>
+        <label>Job ID<input id="jobId" name="jobId" placeholder="ID if available"></label>
+      </div>
+      <label>Canonical job URL<input id="canonicalUrl" name="canonicalUrl" type="url" placeholder="https://example.com/jobs/…" spellcheck="false"></label>
+      <label>Job description / selected text<textarea id="description" name="description" rows="6" placeholder="Select job details on the page, use Capture, or paste a description here."></textarea></label>
+      <button type="button" class="button subtle" id="recapture">↻ Recapture active page</button>
+      <div class="settings-row">
+        <label>Request format
+          <select id="profile" name="profile"><option value="careerops_standard">CareerOps Standard</option><option value="careerops_json">CareerOps JSON</option></select>
+        </label>
+        <button type="button" class="text-button" id="saveDefaults">Save defaults</button>
+      </div>
+      <details><summary>Review generated request</summary><pre id="preview" tabindex="0"></pre></details>
+      <div class="actions">
+        <button id="copy" type="button" class="button secondary">Copy request</button>
+        <button id="copyOpen" type="button" class="button primary">Copy + Open ChatGPT</button>
+      </div>
+      <p class="fineprint">Manual handoff: paste the copied request into ChatGPT and submit it yourself. No application is submitted by this extension.</p>
+    </form>
+  </main>
+  <script type="module" src="ui.js"></script>
+</body>
+</html>

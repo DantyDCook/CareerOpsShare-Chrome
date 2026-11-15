@@ -1,0 +1,49 @@
+name: CareerOps Share Chrome LocalCI
+
+# Security: this public repository must not execute arbitrary fork PR code
+# on the owner's self-hosted LocalCI infrastructure.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-and-package:
+    if: github.repository == 'DantyDCook/CareerOpsShare-Chrome'
+    runs-on: [self-hosted, linux, x64, local-ci, hyperv-ci]
+    timeout-minutes: 15
+    steps:
+      - name: Checkout reviewed revision
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Test JavaScript and package release candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          node -e 'if (Number(process.versions.node.split(".")[0]) < 20) process.exit(1)'
+          python3 --version
+          npm run check
+          python3 scripts/package.py --out-dir dist
+          (cd dist && sha256sum -c CareerOpsShare-Chrome-SHA256SUMS.txt)
+          python3 - <<'CHECK'
+          import json, zipfile
+          from pathlib import Path
+          manifest=json.loads(Path('manifest.json').read_text())
+          assert manifest['manifest_version']==3
+          assert not manifest.get('host_permissions')
+          artifact=Path('dist') / f"CareerOpsShare-Chrome-v{manifest['version']}-unpacked.zip"
+          with zipfile.ZipFile(artifact) as z:
+              assert 'manifest.json' in z.namelist()
+              assert all(not name.startswith('.github/') for name in z.namelist())
+          CHECK
+      - name: Archive validated package and checksums
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: careerops-share-chrome-${{ github.sha }}
+          path: dist/
+          retention-days: 14
+          if-no-files-found: error
