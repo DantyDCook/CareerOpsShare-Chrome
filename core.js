@@ -94,6 +94,13 @@ export function canonicalizeUrl(input) {
   return sanitizeUrl(url.toString(), sourceId);
 }
 
+/** URL-based metadata that can be refreshed whenever the job URL is edited. */
+export function inferJobMetadata(urlInput) {
+  const canonicalUrl = canonicalizeUrl(urlInput);
+  const { source, sourceId } = detectSource(canonicalUrl);
+  return { source, sourceId, jobId: extractJobId(canonicalUrl, sourceId) || '' };
+}
+
 function limited(value, max) {
   return typeof value === 'string' ? value.trim().slice(0, max) : '';
 }
@@ -118,6 +125,10 @@ export function captureToDraft(capture = {}) {
     jobId: extractJobId(canonicalUrl, sourceId) || '',
     originalUrl: originalUrl || '',
     canonicalUrl: canonicalUrl || '',
+    // Baseline lets downstream requests distinguish inferred metadata from explicit edits.
+    identityUrl: canonicalUrl || '',
+    sourceOverride: false,
+    jobIdOverride: false,
     wasTruncated,
   };
 }
@@ -152,12 +163,19 @@ export function createRequest(draft, action = ACTIONS['quick-analyze']) {
   if (!draft || typeof draft !== 'object') throw new Error('Missing job draft');
   const canonicalUrl = canonicalizeUrl(draft.canonicalUrl) || null;
   const originalUrl = sanitizeUrl(draft.originalUrl) || null;
-  // An edited canonical URL takes precedence over the initially detected source/id.
-  const inferred = detectSource(canonicalUrl || originalUrl);
-  const source = limited(draft.source, 180) || inferred.source;
+  // An edited canonical URL invalidates metadata inferred for the original posting.
+  // Explicit edits after a URL change can still override the inferred source or ID.
+  const inferred = inferJobMetadata(canonicalUrl || originalUrl);
+  const originalIdentityUrl = canonicalizeUrl(draft.identityUrl ?? draft.originalUrl) || null;
+  const urlChanged = canonicalUrl !== originalIdentityUrl;
+  const source = (urlChanged && !draft.sourceOverride)
+    ? inferred.source : limited(draft.source, 180) || inferred.source;
   const sourceId = source === inferred.source ? inferred.sourceId :
-    limited(draft.sourceId, 180) || source.toLowerCase().replace(/\s+/g, '_');
-  const jobId = limited(draft.jobId, 140) || extractJobId(canonicalUrl, sourceId) || null;
+    draft.sourceOverride ? source.toLowerCase().replace(/\s+/g, '_') :
+      limited(draft.sourceId, 180) || source.toLowerCase().replace(/\s+/g, '_');
+  const jobId = (urlChanged && !draft.jobIdOverride)
+    ? inferred.jobId || null
+    : limited(draft.jobId, 140) || inferred.jobId || null;
   const subject = optional(draft.subject);
   const company = optional(draft.company);
   const desc = limited(draft.description, MAX_CONTENT_CHARS);
