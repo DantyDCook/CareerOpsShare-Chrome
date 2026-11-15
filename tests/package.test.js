@@ -37,3 +37,15 @@ test('no remote-loaded code or automatic submission transport', () => {
     assert.doesNotMatch(js, /\.submit\s*\(/);
   }
 });
+
+
+test('LocalCI workflow uses trusted-only triggers and fixed self-hosted labels', () => {
+  const workflow = read('.github/workflows/localci.yml');
+  assert.match(workflow, /workflow_dispatch:/);
+  assert.match(workflow, /branches: \[main\]/);
+  assert.match(workflow, /runs-on: \[self-hosted, linux, x64, local-ci, hyperv-ci\]/);
+  assert.doesNotMatch(workflow, /^\s*pull_request(?:_target)?:/m);
+  assert.doesNotMatch(workflow, /runs-on:.*(?:ubuntu-latest|windows-latest)/);
+  assert.match(workflow, /persist-credentials: false/);
+  assert.match(workflow, /sha256sum -c/);
+});

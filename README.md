@@ -59,10 +59,10 @@ Requires Node.js 20+ for tests; **no npm dependencies or installation step**:
 ```powershell
 cd D:\Dev\CareerOps\CareerOpsShare-Chrome
 npm run check
-python scripts\package.py
+python scripts\package.py --out-dir dist
 ```
 
-`npm run check` parses all JavaScript files and runs the Node built-in test suite. `scripts/package.py` builds a runtime-only `unpacked.zip` plus a separate source archive and SHA-256 manifests. If Python Playwright and Chromium are available, `tests/browser_smoke.py` provides an optional browser smoke test; it is **not** part of the required release gate until consistently operational in the target LocalCI environment.
+`npm run check` parses all JavaScript files and runs the Node built-in test suite. `scripts/package.py --out-dir dist` builds a runtime-only `unpacked.zip` plus a separate source archive and SHA-256 manifests inside `dist/`. The workflow uses only self-hosted LocalCI labels, and never automatically runs untrusted public-fork PRs. If Python Playwright and Chromium are available, `tests/browser_smoke.py` provides an optional browser smoke test; it is **not** part of the required release gate until consistently operational in the target LocalCI environment.
 
 ## Integration boundaries
 

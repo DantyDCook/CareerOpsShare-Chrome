@@ -1,0 +1,27 @@
+schema_version: "1.0"
+policy_mode: risk_calibrated
+project:
+  name: CareerOpsShare-Chrome
+  default_assurance: medium
+workflow:
+  sequence: [plan, build, test, repair, milestone_audit, verify, next]
+  design_audit: when_sharing_privacy_or_platform_contract_changes
+  adversarial_audit: milestone_or_high_risk_boundary
+  reopen_plan_only_for: [architectural_contradiction, missing_requirement, invalidated_invariant]
+regression:
+  small_change: focused
+  subsystem_change: subsystem
+  milestone: full
+  release: full
+components:
+  chrome_permissions_and_injection: {assurance: high}
+  capture_and_file_handling: {assurance: medium_high}
+  privacy_sensitive_data: {assurance: high}
+  external_service_handoff: {assurance: medium_high}
+  ui_and_accessibility: {assurance: medium}
+policy:
+  client_only: true
+  backend_owner: DantyDCook/CareerOps-Engine
+  state_owner: DantyDCook/CareerOps-Workspace
+  localci_only: true
+  public_repo_no_untrusted_pr_on_self_hosted_runner: true

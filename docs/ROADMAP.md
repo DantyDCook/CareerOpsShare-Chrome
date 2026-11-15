@@ -12,7 +12,9 @@
 - [x] Unit/static tests (Node; no third-party packages)
 - [ ] **Real Chrome browser acceptance on Windows** (popup, context menu, link vs selection, restricted-page fallback, clipboard)
 - [ ] **LocalCI job registration and verified run** (depends on ongoing LocalCI migration/repository onboarding)
-- [ ] **Dedicated GitHub repo** (`DantyDCook/CareerOpsShare-Chrome`) — repo creation unavailable in current connector
+- [x] **Dedicated GitHub repo** (`DantyDCook/CareerOpsShare-Chrome`) created
+- [x] v0.1.0 source imported onto feature branch for review
+- [ ] Merge PR after review and accept first LocalCI run
 - [ ] Cross-repo integration issue/PR and component registry update after repository creation
 
 ## v0.2.0 — Improved desktop intake

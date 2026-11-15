@@ -1,6 +1,7 @@
 """Build reproducible extension-only and source archives, with checksums."""
 from hashlib import sha256
 from pathlib import Path
+from argparse import ArgumentParser
 from zipfile import ZipFile, ZIP_DEFLATED, ZipInfo
 import json
 
@@ -16,10 +17,11 @@ SOURCE_FILES = RUNTIME_FILES + [
     'README.md', 'package.json', 'docs/ROADMAP.md', 'docs/LOCALCI.md',
     'tests/core.test.js', 'tests/package.test.js', 'tests/browser_smoke.py',
     'tests/fixture/job.html', 'scripts/package.py', '.gitignore',
+    '.github/workflows/localci.yml', '.engineering-governance.yaml',
 ]
 
-def archive(name, paths):
-    target=OUT/name
+def archive(name, paths, output_dir):
+    target=output_dir/name
     with ZipFile(target, 'w', compression=ZIP_DEFLATED, compresslevel=9) as bundle:
         for relative in sorted(paths):
             full=ROOT/relative
@@ -32,11 +34,16 @@ def archive(name, paths):
     return target
 
 if __name__=='__main__':
+    parser=ArgumentParser()
+    parser.add_argument('--out-dir', type=Path, default=OUT, help='Archive output directory (defaults to checkout parent)')
+    args=parser.parse_args()
+    output_dir=args.out_dir.resolve()
+    output_dir.mkdir(parents=True, exist_ok=True)
     artifacts=[
-        archive(f'CareerOpsShare-Chrome-v{VERSION}-unpacked.zip', RUNTIME_FILES),
-        archive(f'CareerOpsShare-Chrome-v{VERSION}-source.zip', SOURCE_FILES),
+        archive(f'CareerOpsShare-Chrome-v{VERSION}-unpacked.zip', RUNTIME_FILES, output_dir),
+        archive(f'CareerOpsShare-Chrome-v{VERSION}-source.zip', SOURCE_FILES, output_dir),
     ]
-    manifest=OUT/'CareerOpsShare-Chrome-SHA256SUMS.txt'
+    manifest=output_dir/'CareerOpsShare-Chrome-SHA256SUMS.txt'
     manifest.write_text(''.join(f'{sha256(path.read_bytes()).hexdigest()}  {path.name}\n' for path in artifacts))
     for file in [*artifacts, manifest]:
         print(f'{file.name}: {file.stat().st_size:,} bytes')
